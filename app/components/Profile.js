@@ -32,13 +32,12 @@ function Profile() {
     async function fetchProfile() {
       try {
         const response = await Axios.post(`/profile/${username}`, { token: appState.user.token }, { cancelToken: ourRequest.token });
-        if (!response.data) {
-          setState(draft => {
-            draft.notFound = true;
-          });
-        }
         setState(draft => {
-          draft.profileData = response.data;
+          if (response.data) {
+            draft.profileData = response.data;
+          } else {
+            draft.notFound = true;
+          }
         });
       } catch (e) {
         console.log(e.response);
