@@ -1,18 +1,20 @@
 import React, { useEffect, useContext } from "react";
 import { useImmer } from "use-immer";
 import Page from "./Page";
-import { useParams, NavLink, Switch, Route } from "react-router-dom";
+import { useParams, withRouter, NavLink, Switch, Route } from "react-router-dom";
 import Axios from "axios";
 import StateContext from "../StateContext";
 import ProfilePosts from "./ProfilePosts";
 import ProfileFollowers from "./ProfileFollowers";
 import ProfileFollowing from "./ProfileFollowing";
+import NotFound from "./NotFound";
 
 function Profile() {
   const { username } = useParams();
   const appState = useContext(StateContext);
 
   const [state, setState] = useImmer({
+    notFound: false,
     followActionLoading: false,
     startFollowingRequestCount: 0,
     stopFollowingRequestCount: 0,
@@ -30,11 +32,16 @@ function Profile() {
     async function fetchProfile() {
       try {
         const response = await Axios.post(`/profile/${username}`, { token: appState.user.token }, { cancelToken: ourRequest.token });
+        if (!response.data) {
+          setState(draft => {
+            draft.notFound = true;
+          });
+        }
         setState(draft => {
           draft.profileData = response.data;
         });
       } catch (e) {
-        console.log(e.response.data);
+        console.log(e.response);
       }
     }
     fetchProfile();
@@ -95,6 +102,10 @@ function Profile() {
     }
   }, [state.stopFollowingRequestCount]);
 
+  if (state.notFound) {
+    return <NotFound />;
+  }
+
   function startFollowing() {
     setState(draft => {
       draft.startFollowingRequestCount++;
@@ -150,4 +161,4 @@ function Profile() {
   );
 }
 
-export default Profile;
+export default withRouter(Profile);

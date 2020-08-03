@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useContext } from "react";
 import Axios from "axios";
-import { useParams, Link } from "react-router-dom";
+import { useParams, withRouter, Link } from "react-router-dom";
 import LoadingDotsIcon from "./LoadingDotsIcon";
 import StateContext from "../StateContext";
 import Post from "./Post";
+import NotFound from "./NotFound";
 
 function ProfilePosts() {
   const appState = useContext(StateContext);
@@ -19,7 +20,7 @@ function ProfilePosts() {
         setIsLoading(false);
         setPosts(response.data);
       } catch (e) {
-        console.log(e.response.data);
+        console.log(e.response);
       }
     }
     fetchPosts();
@@ -27,6 +28,10 @@ function ProfilePosts() {
       ourRequest.cancel();
     };
   }, [username]);
+
+  if (!isLoading && !posts) {
+    return <NotFound />;
+  }
 
   if (isLoading) return <LoadingDotsIcon />;
 
@@ -45,4 +50,4 @@ function ProfilePosts() {
   );
 }
 
-export default ProfilePosts;
+export default withRouter(ProfilePosts);
